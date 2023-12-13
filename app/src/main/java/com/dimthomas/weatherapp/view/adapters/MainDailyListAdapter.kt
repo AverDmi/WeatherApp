@@ -3,24 +3,29 @@ package com.dimthomas.weatherapp.view.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.dimthomas.weatherapp.R
+import com.dimthomas.weatherapp.business.model.DailyWeatherModel
+import com.dimthomas.weatherapp.databinding.ItemMainDailyBinding
+import com.dimthomas.weatherapp.databinding.ItemMainHourlyBinding
 
-class MainDailyListAdapter: RecyclerView.Adapter<MainDailyListAdapter.DailyViewHolder>() {
+class MainDailyListAdapter: BaseAdapter<DailyWeatherModel>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_main_daily, parent, false)
-        return DailyViewHolder(view)
+        val itemBinding = ItemMainDailyBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return DailyViewHolder(itemBinding)
     }
 
-    override fun getItemCount(): Int {
-        return 7
-    }
-
-    override fun onBindViewHolder(holder: DailyViewHolder, position: Int) {
-
-    }
-
-    inner class DailyViewHolder(view: View): RecyclerView.ViewHolder(view) {
+    inner class DailyViewHolder(private val itemBinding: ItemMainDailyBinding): BaseViewHolder(itemBinding.root) {
+        override fun bindView(position: Int) {
+            with(itemBinding) {
+                itemDailyDateTv.text = "25 Saturday"
+                itemDailyPopTv.text = "25 %"
+                itemDailyMinTempTv.text= "12°"
+                itemDailyMaxTempTv.text= "18°"
+                itemDailyWeatherConditionIcon.setImageResource(R.drawable.ic_sun)
+            }
+        }
 
     }
 }
