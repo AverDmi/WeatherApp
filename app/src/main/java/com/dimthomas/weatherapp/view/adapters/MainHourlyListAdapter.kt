@@ -1,16 +1,11 @@
 package com.dimthomas.weatherapp.view.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.content.ContextCompat
-import butterknife.BindView
-import butterknife.ButterKnife
 import com.dimthomas.weatherapp.R
 import com.dimthomas.weatherapp.business.model.HourlyWeatherModel
 import com.dimthomas.weatherapp.databinding.ItemMainHourlyBinding
-import com.google.android.material.textview.MaterialTextView
 
 class MainHourlyListAdapter : BaseAdapter<HourlyWeatherModel>() {
 

@@ -1,14 +1,10 @@
 package com.dimthomas.weatherapp.view.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
 import com.dimthomas.weatherapp.R
 import com.dimthomas.weatherapp.business.model.DailyWeatherModel
 import com.dimthomas.weatherapp.databinding.ItemMainDailyBinding
-import com.dimthomas.weatherapp.databinding.ItemMainHourlyBinding
 
 class MainDailyListAdapter: BaseAdapter<DailyWeatherModel>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyViewHolder {

@@ -1,19 +1,37 @@
 package com.dimthomas.weatherapp
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dimthomas.weatherapp.databinding.ActivityMainBinding
 import com.dimthomas.weatherapp.view.adapters.MainDailyListAdapter
 import com.dimthomas.weatherapp.view.adapters.MainHourlyListAdapter
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
+const val GEO_LOCATION_REQUEST_COD_SUCCESS = 1
+const val TAG = "GEO_TEST"
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    private val geoService by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private val locationRequest by lazy { initLocationRequest() }
+    private lateinit var mLocation: Location
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        checkPermission()
         initViews()
 
         binding.mainHourlyList.apply {
@@ -27,6 +45,8 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             setHasFixedSize(true)
         }
+
+        geoService.requestLocationUpdates(locationRequest, geoCallback, null)
     }
 
     private fun initViews() {
@@ -46,4 +66,57 @@ class MainActivity : AppCompatActivity() {
             mainSunsetTimeTv.text = "22:43"
         }
     }
+
+    // -------------   location code   -------------
+
+    private fun initLocationRequest(): LocationRequest {
+        return LocationRequest.Builder(PRIORITY_HIGH_ACCURACY, 10000)
+            .setMinUpdateIntervalMillis(5000)
+            .build()
+    }
+
+    private val geoCallback = object : LocationCallback() {
+        override fun onLocationResult(geo: LocationResult) {
+            Log.d(TAG, "onLocationResult: ${geo.locations.size}")
+            for (location in geo.locations) {
+                mLocation = location
+                Log.d(TAG, "onLocationResult: lat: ${location.latitude} ; lon: ${location.longitude}")
+            }
+        }
+    }
+
+    // ------ initial activity code
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        Log.d(TAG, "onRequestPermissionsResult: $requestCode")
+    }
+
+    private fun checkPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+            PackageManager. PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+            PackageManager.PERMISSION_GRANTED) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Нам нужны гео данные")
+                .setMessage("Пожалуйста разрешите доступ к Вашим гео данным для работы приложения")
+                .setPositiveButton("Ok") { _,_ ->
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        GEO_LOCATION_REQUEST_COD_SUCCESS)
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                        GEO_LOCATION_REQUEST_COD_SUCCESS)
+                }
+                .setNegativeButton("Cancel") { dialog,_ -> dialog.dismiss() }
+                .create()
+                .show()
+        }
+    }
+
+    // -------------   location code   -------------
 }
