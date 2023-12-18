@@ -8,7 +8,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.dimthomas.weatherapp.business.model.DailyWeatherModel
+import com.dimthomas.weatherapp.business.model.HourlyWeatherModel
+import com.dimthomas.weatherapp.business.model.WeatherData
 import com.dimthomas.weatherapp.databinding.ActivityMainBinding
+import com.dimthomas.weatherapp.presenters.MainPresenter
+import com.dimthomas.weatherapp.view.MainView
 import com.dimthomas.weatherapp.view.adapters.MainDailyListAdapter
 import com.dimthomas.weatherapp.view.adapters.MainHourlyListAdapter
 import com.google.android.gms.location.LocationCallback
@@ -17,12 +22,16 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import moxy.MvpAppCompatActivity
+import moxy.ktx.moxyPresenter
 
 const val GEO_LOCATION_REQUEST_COD_SUCCESS = 1
 const val TAG = "GEO_TEST"
-class MainActivity : AppCompatActivity() {
+class MainActivity : MvpAppCompatActivity(), MainView {
 
     private lateinit var binding: ActivityMainBinding
+
+    private val mainPresenter by moxyPresenter { MainPresenter() }
 
     private val geoService by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private val locationRequest by lazy { initLocationRequest() }
@@ -46,6 +55,8 @@ class MainActivity : AppCompatActivity() {
             setHasFixedSize(true)
         }
 
+        mainPresenter.enable()
+
         geoService.requestLocationUpdates(locationRequest, geoCallback, null)
     }
 
@@ -67,6 +78,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // -------------   moxy code   -------------
+
+    override fun displayLocation(data: String) {
+        binding.mainCityNameTv.text = data
+    }
+
+    override fun displayCurrentData(data: WeatherData) {
+        with(binding) {
+            mainCityNameTv.text = "Moscow"
+            mainDateTv.text = "1 april"
+            mainWeatherConditionIcon.setImageResource(R.drawable.ic_sun)
+            mainTemp.text = "25\u00B0"
+            mainTempMinTv.text = "19"
+            mainTempAvgTv.text = "25"
+            mainTempMaxTv.text = "30"
+            mainWeatherImage.setImageResource(R.mipmap.cloud3x)
+            mainPressureMuTv.text = "1023 hPa"
+            mainHumidityMuTv.text = "88 %"
+            mainWindSpeedMuTv.text = "5 m/s"
+            mainSunriseTimeTv.text = "4:30"
+            mainSunsetTimeTv.text = "22:43"
+        }
+    }
+
+    override fun displayHourlyData(data: List<HourlyWeatherModel>) {
+        (binding.mainHourlyList.adapter as MainHourlyListAdapter).updateData(data)
+    }
+
+    override fun displayDailyData(data: List<DailyWeatherModel>) {
+        (binding.mainDailyList.adapter as MainDailyListAdapter).updateData(data)
+    }
+
+    override fun displayError(error: Throwable) {
+
+    }
+
+    override fun setLoading(flag: Boolean) {
+
+    }
+
+    // -------------   moxy code   -------------
+
     // -------------   location code   -------------
 
     private fun initLocationRequest(): LocationRequest {
@@ -80,6 +133,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "onLocationResult: ${geo.locations.size}")
             for (location in geo.locations) {
                 mLocation = location
+                mainPresenter.refresh(mLocation.latitude.toString(), mLocation.longitude.toString())
                 Log.d(TAG, "onLocationResult: lat: ${location.latitude} ; lon: ${location.longitude}")
             }
         }
