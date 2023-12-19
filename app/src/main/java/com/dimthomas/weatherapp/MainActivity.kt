@@ -1,6 +1,7 @@
 package com.dimthomas.weatherapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
@@ -25,7 +26,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import moxy.MvpAppCompatActivity
 import moxy.ktx.moxyPresenter
 
-const val GEO_LOCATION_REQUEST_COD_SUCCESS = 1
+
 const val TAG = "GEO_TEST"
 class MainActivity : MvpAppCompatActivity(), MainView {
 
@@ -36,11 +37,12 @@ class MainActivity : MvpAppCompatActivity(), MainView {
     private val geoService by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private val locationRequest by lazy { initLocationRequest() }
     private lateinit var mLocation: Location
+
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        checkPermission()
         initViews()
 
         binding.mainHourlyList.apply {
@@ -138,39 +140,4 @@ class MainActivity : MvpAppCompatActivity(), MainView {
             }
         }
     }
-
-    // ------ initial activity code
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        Log.d(TAG, "onRequestPermissionsResult: $requestCode")
-    }
-
-    private fun checkPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-            PackageManager. PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("Нам нужны гео данные")
-                .setMessage("Пожалуйста разрешите доступ к Вашим гео данным для работы приложения")
-                .setPositiveButton("Ok") { _,_ ->
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        GEO_LOCATION_REQUEST_COD_SUCCESS)
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-                        GEO_LOCATION_REQUEST_COD_SUCCESS)
-                }
-                .setNegativeButton("Cancel") { dialog,_ -> dialog.dismiss() }
-                .create()
-                .show()
-        }
-    }
-
-    // -------------   location code   -------------
 }
